@@ -1,4 +1,4 @@
-#Literally 40x laggier, but allows for way more zoom. requires mpmath module
+
 
 from pygame.locals import *
 flags = HWSURFACE|DOUBLEBUF|HWACCEL
@@ -10,7 +10,9 @@ from mpmath import mp, mpf, mpc
 
 
 mp.dps = 100
-size = 0.5
+mp.trap_complex= True
+print(mp)
+size = 0.1
 WIDTH = int(600*size)
 HEIGHT = int(400*size)
 clock = pygame.time.Clock()
@@ -35,7 +37,6 @@ gradientC = [
 (106,52,3)
 ]
 coordinates = (mpf(-1.740062382579339905220844167065825638296641720436171866879862418461182919644153056054840718339483225743450008259172138785492983677893366503417299549623738838303346465461290768441055486136870719850559269507357211790243666940134793753068611574745943820712885258222629105433648695946003865), mpf(0.0281753397792110489924115211443195096875390767429906085704013095958801743240920186385400814658560553615695084486774077000669037710191665338060418999324320867147028768983704831316527873719459264592084600433150333362859318102017032958074799966721030307082150171994798478089798638258639934))
-#some coordinate I found on the internet. You can put in whatever coordinate you want.
 
 # Plot window
 RE_START = coordinates[0]-1.5
@@ -61,7 +62,7 @@ def gradient(degree):
 
 def mandelbrot(c):
     z = 0
-    n = 0
+    n = mpf(0)
     while abs(z) <= 2 and n < MAX_ITER:
         z = z * z + c
         n += 1
@@ -88,8 +89,9 @@ while not done:
     for x in range(0, WIDTH):
         for y in range(0, HEIGHT):
             # Convert pixel coordinate to complex number
-            c = mpc(complex(RE_START + (x / WIDTH) * (RE_END - RE_START),
-                        IM_START + (y / HEIGHT) * (IM_END - IM_START)))
+            c = mpc(mpf(RE_START + (x / WIDTH) * (RE_END - RE_START)),
+                        mpf(IM_START + (y / HEIGHT) * (IM_END - IM_START)))
+            #print(c)
             m = mandelbrot(c)
             hue = m / MAX_ITER
             screen.set_at((x, y), gradient(float(hue)))
