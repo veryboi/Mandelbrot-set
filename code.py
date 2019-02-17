@@ -51,10 +51,9 @@ def mandelbrot(c):
         return MAX_ITER
 
     return n + 1 - log(log2(abs(z)))
-def hsv2rgb(h,s,v):
-    return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h,s,v))
 WIDTH = 600
 HEIGHT = 400
+#You can adjust this, just keep the aspect ratio.
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT),flags)
 screen.set_alpha(None)
@@ -65,8 +64,10 @@ IM_START = -1
 IM_END = 1
 
 coordinates = (-0.207107867093967732893764544285894983866865721506089742782655437797926445872029873945686503449818426679850 , 1.12275706363259748461604158116265882079904682664638092967742378016679413783606239593843344659123247751651)
+#some coordinate I found on the internet. You can put in whatever coordinate you want.
 prev = timeit.default_timer()
 multiplier= 0.7
+#This dictates how much zoom it does per frame. keep in mind this is logarithmic.
 while not done:
     RE_START = (RE_START - coordinates[0]) * multiplier + coordinates[0]
     RE_END = (RE_END - coordinates[0]) * multiplier + coordinates[0]
