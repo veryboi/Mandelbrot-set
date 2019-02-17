@@ -1,4 +1,4 @@
-
+#requires: pygame, mpmath libaries
 
 from pygame.locals import *
 flags = HWSURFACE|DOUBLEBUF|HWACCEL
@@ -7,17 +7,18 @@ import timeit
 from math import log, log2
 import math
 from mpmath import mp, mpf, mpc
-
-
+from collections import defaultdict
+from math import floor, ceil
+import sys
 mp.dps = 100
 mp.trap_complex= True
 print(mp)
-size = 0.1
+size = 1
 WIDTH = int(600*size)
 HEIGHT = int(400*size)
 clock = pygame.time.Clock()
 done = False
-MAX_ITER = 80
+MAX_ITER = 800
 gradientC = [
 (66,30,15),
 (25,7,26),
@@ -45,7 +46,7 @@ IM_START = coordinates[1]-1
 IM_END = coordinates[1]+1
 
 prev = timeit.default_timer()
-multiplier= 0.01
+multiplier= 0.1
 #This dictates how much zoom it does per frame. keep in mind this is logarithmic.
 
 def gradient(degree):
@@ -71,8 +72,16 @@ def mandelbrot(c):
         return int(MAX_ITER)
 
     return n + 1 - log(log2(abs(z)))
+def linear_interpolation(color1, color2, t):
+    return color1 * (1 - t) + color2 * t
+#Progress bar
+def progressBar(value, endvalue, bar_length=100):
+    percent = float(value) / endvalue
+    arrow = '-' * int(round(percent * bar_length) - 1) + '>'
+    spaces = ' ' * (bar_length - len(arrow))
 
-
+    sys.stdout.write("\rPercent: [{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
+    sys.stdout.flush()
 
 
 pygame.init()
@@ -80,12 +89,15 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT),flags)
 screen.set_alpha(None)
 
 
-
+frame = 0
 while not done:
+    print("Processing frame " + str(frame) + ".")
     RE_START = (RE_START - coordinates[0]) * multiplier + coordinates[0]
     RE_END = (RE_END - coordinates[0]) * multiplier + coordinates[0]
     IM_START = (IM_START - coordinates[1]) * multiplier + coordinates[1]
     IM_END = (IM_END - coordinates[1]) * multiplier + coordinates[1]
+    histogram = defaultdict(lambda: 0)
+    values = {}
     for x in range(0, WIDTH):
         for y in range(0, HEIGHT):
             # Convert pixel coordinate to complex number
@@ -93,14 +105,39 @@ while not done:
                         mpf(IM_START + (y / HEIGHT) * (IM_END - IM_START)))
             #print(c)
             m = mandelbrot(c)
-            hue = m / MAX_ITER
+            values[(x, y)] = m
+            if m < MAX_ITER:
+                histogram[floor(m)] += 1
+        progressBar(x, WIDTH)
+
+            # hue = m / MAX_ITER
+            # screen.set_at((x, y), gradient(float(hue)))
+        #pygame.display.flip()
+    print()
+    total = sum(histogram.values())
+    hues = []
+    h = 0
+    for i in range(MAX_ITER):
+        h += histogram[i] / total
+        hues.append(h)
+    hues.append(h)
+    print("Processing complete.")
+    for x in range(0, WIDTH):
+        for y in range(0, HEIGHT):
+            m = values[(x, y)]
+            # The color depends on the number of iterations
+            hue = 1-linear_interpolation(hues[floor(m)], hues[ceil(m)], m % 1)
+            saturation = 255
+            value = 255 if m < MAX_ITER else 0
+            # Plot the point
             screen.set_at((x, y), gradient(float(hue)))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
+        pygame.display.flip()
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
 
-
-    print('Time: ',timeit.default_timer() - prev)
+    print('Time: ', timeit.default_timer() - prev, "s")
     prev = timeit.default_timer()
-    pygame.display.flip()
-    clock.tick(60)
+    frame += 1
+
