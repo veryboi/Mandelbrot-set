@@ -87,7 +87,6 @@ while not done:
             hue = m / MAX_ITER
             saturation = 1
             value = 1 if m < MAX_ITER else 0
-            #print((hue, saturation, value))
             screen.set_at((x, y), gradient(hue))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
