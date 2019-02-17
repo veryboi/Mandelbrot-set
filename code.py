@@ -57,14 +57,18 @@ HEIGHT = 400
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT),flags)
 screen.set_alpha(None)
-# Plot window
-RE_START = -2
-RE_END = 1
-IM_START = -1
-IM_END = 1
+
+
 
 coordinates = (-0.207107867093967732893764544285894983866865721506089742782655437797926445872029873945686503449818426679850 , 1.12275706363259748461604158116265882079904682664638092967742378016679413783606239593843344659123247751651)
 #some coordinate I found on the internet. You can put in whatever coordinate you want.
+
+# Plot window
+RE_START = coordinates[0]-1.5
+RE_END = coordinates[0]+1.5
+IM_START = coordinates[1]-1
+IM_END = coordinates[1]+1
+
 prev = timeit.default_timer()
 multiplier= 0.7
 #This dictates how much zoom it does per frame. keep in mind this is logarithmic.
